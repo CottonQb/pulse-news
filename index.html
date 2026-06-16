@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f17" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Pulse" />
+<title>Pulse — Your X News, Without X</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Pulse","short_name":"Pulse","display":"standalone","background_color":"%230b0f17","theme_color":"%230b0f17","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d9bf0%27/%3E%3Ctext x=%2750%27 y=%2768%27 font-size=%2755%27 text-anchor=%27middle%27 fill=%27white%27%3E%E2%9A%A1%3C/text%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml"}]}' />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231d9bf0'/%3E%3Ctext x='50' y='70' font-size='58' text-anchor='middle' fill='white'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231d9bf0'/%3E%3Ctext x='50' y='70' font-size='58' text-anchor='middle' fill='white'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#0b0f17; --bg-soft:#11161f; --card:#141a24; --card-hover:#19212d;
+    --border:#222b38; --text:#e7edf5; --muted:#8a97a8; --muted-2:#5d6b7d;
+    --accent:#1d9bf0; --accent-soft:rgba(29,155,240,.14); --gold:#f5b748;
+    --green:#2dd4a7; --danger:#f06262; --radius:16px; --maxw:880px;
+  }
+  [data-theme="light"]{
+    --bg:#f3f5f8; --bg-soft:#ffffff; --card:#ffffff; --card-hover:#f7f9fc;
+    --border:#e2e7ee; --text:#15202b; --muted:#5d6b7d; --muted-2:#94a3b4;
+    --accent:#1d83cf; --accent-soft:rgba(29,131,207,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  a{color:inherit}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select{font-family:inherit}
+
+  header{
+    position:sticky;top:0;z-index:30;background:rgba(11,15,23,.82);
+    backdrop-filter:saturate(160%) blur(14px); -webkit-backdrop-filter:saturate(160%) blur(14px);
+    border-bottom:1px solid var(--border); padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  }
+  [data-theme="light"] header{background:rgba(255,255,255,.82)}
+  .bar{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:12px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;letter-spacing:-.3px}
+  .logo .dot{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:15px}
+  .spacer{flex:1}
+  .iconbtn{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--muted);border:1px solid transparent;transition:.15s}
+  .iconbtn:hover{background:var(--card-hover);color:var(--text)}
+  .iconbtn svg{width:19px;height:19px}
+  .refresh{background:var(--accent);color:#fff;border-radius:11px;padding:0 16px;height:38px;font-weight:700;display:flex;align-items:center;gap:7px;transition:.15s}
+  .refresh:hover{filter:brightness(1.06)}
+  .refresh:disabled{opacity:.6;cursor:default}
+  .refresh svg{width:16px;height:16px}
+  .spin{animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .sub{max-width:var(--maxw);margin:9px auto 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .search{flex:1;min-width:160px;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:0 12px;height:38px}
+  .search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px}
+  .search svg{width:16px;height:16px;color:var(--muted)}
+  .meta{font-size:12px;color:var(--muted-2);white-space:nowrap}
+
+  .chips{max-width:var(--maxw);margin:10px auto 0;display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;font-size:13px;font-weight:600;padding:7px 13px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:.15s}
+  .chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .chip .n{opacity:.7;font-weight:600;margin-left:4px}
+
+  main{max-width:var(--maxw);margin:0 auto;padding:16px}
+  .item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px;margin-bottom:12px;transition:.15s;position:relative}
+  .item:hover{background:var(--card-hover);border-color:#2c3848}
+  .item.read{opacity:.58}
+  .item .top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+  .av{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .src{font-weight:700;font-size:14px}
+  .cat{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+  .time{font-size:12px;color:var(--muted-2);margin-left:auto;white-space:nowrap}
+  .item h3{margin:2px 0 6px;font-size:16px;line-height:1.4;font-weight:650;letter-spacing:-.2px}
+  .item .body{color:var(--muted);font-size:14px;line-height:1.55;margin:0 0 10px;overflow-wrap:anywhere}
+  .item .acts{display:flex;align-items:center;gap:6px}
+  .act{font-size:12.5px;font-weight:600;color:var(--muted);padding:6px 10px;border-radius:9px;display:flex;align-items:center;gap:6px;transition:.15s}
+  .act:hover{background:var(--bg-soft);color:var(--text)}
+  .act svg{width:14px;height:14px}
+  .act.on{color:var(--gold)}
+  .act.open{margin-left:auto;color:var(--accent)}
+  .thumb{float:right;width:84px;height:84px;border-radius:11px;object-fit:cover;margin:0 0 8px 12px;background:var(--bg-soft)}
+
+  .state{text-align:center;padding:54px 20px;color:var(--muted)}
+  .state .big{font-size:46px;margin-bottom:10px}
+  .state h2{color:var(--text);font-size:19px;margin:0 0 8px}
+  .state p{margin:0 auto 18px;max-width:420px;font-size:14px}
+  .state .cta{display:inline-flex;gap:8px;background:var(--accent);color:#fff;padding:10px 18px;border-radius:11px;font-weight:700}
+  .errbox{max-width:var(--maxw);margin:0 auto 12px;background:rgba(240,98,98,.08);border:1px solid rgba(240,98,98,.3);color:#f0a0a0;border-radius:12px;padding:10px 14px;font-size:13px}
+
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(4,7,12,.6);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+  .overlay.show{display:flex}
+  .sheet{background:var(--bg-soft);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:var(--maxw);max-height:88vh;overflow:auto;padding:18px 18px calc(22px + env(safe-area-inset-bottom));animation:up .22s ease}
+  @media(min-width:680px){.overlay{align-items:center}.sheet{border-radius:20px}}
+  @keyframes up{from{transform:translateY(24px);opacity:.5}to{transform:none;opacity:1}}
+  .sheet h2{margin:0 0 4px;font-size:18px}
+  .sheet .lead{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  .field input,.field select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px;color:var(--text);font-size:14px;outline:none}
+  .field input:focus,.field select:focus{border-color:var(--accent)}
+  .field .hint{font-size:11.5px;color:var(--muted-2);margin-top:5px}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  .btn{width:100%;background:var(--accent);color:#fff;font-weight:700;padding:12px;border-radius:12px;font-size:15px;margin-top:4px}
+  .btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--border)}
+  .feedrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+  .feedrow:last-child{border:none}
+  .feedrow .nm{font-weight:600;font-size:14px}
+  .feedrow .u{font-size:11.5px;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  .feedrow .del{color:var(--danger);font-size:18px;padding:4px 8px}
+  .tag{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 7px;border-radius:6px;flex-shrink:0}
+  details.guide{margin-top:6px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0 14px}
+  details.guide summary{cursor:pointer;font-weight:700;font-size:13.5px;padding:13px 0;list-style:none}
+  details.guide summary::-webkit-details-marker{display:none}
+  details.guide summary::before{content:"\203A";display:inline-block;margin-right:8px;transition:.2s;color:var(--accent)}
+  details.guide[open] summary::before{transform:rotate(90deg)}
+  details.guide .g{padding:0 0 14px;font-size:13px;color:var(--muted);line-height:1.65}
+  details.guide ol{margin:6px 0;padding-left:20px} details.guide li{margin:5px 0}
+  details.guide code{background:var(--bg);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--text)}
+  .seed{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+  .seed button{font-size:12px;font-weight:600;border:1px dashed var(--border);color:var(--muted);padding:6px 11px;border-radius:9px}
+  .seed button:hover{border-color:var(--accent);color:var(--accent)}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);background:var(--text);color:var(--bg);font-weight:600;font-size:13px;padding:10px 18px;border-radius:11px;z-index:60;opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo"><span class="dot">&#9889;</span> Pulse</div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="iconbtn" id="manageBtn" title="Manage feeds" aria-label="Manage feeds">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <button class="refresh" id="refreshBtn">
+      <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.65 4.36A9 9 0 0 0 20.5 15"/></svg>
+      <span id="refreshTxt">Refresh</span>
+    </button>
+  </div>
+  <div class="sub">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="search" placeholder="Search headlines…" autocomplete="off" />
+    </div>
+    <span class="meta" id="metaInfo">Not updated yet</span>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+
+<div id="errArea"></div>
+<main id="feed"></main>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+const LS = {
+  feeds:"pulse.feeds", read:"pulse.read", saved:"pulse.saved",
+  theme:"pulse.theme", proxy:"pulse.proxy", cache:"pulse.cache"
+};
+const load = (k,f)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } };
+const save = (k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+
+let feeds  = load(LS.feeds, []);
+let readSet= new Set(load(LS.read, []));
+let savedSet=new Set(load(LS.saved, []));
+let items  = load(LS.cache, []);
+let activeCat = "All";
+let savedOnly = false;
+let query = "";
+
+const PROXIES = [
+  u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
+  u => "https://corsproxy.io/?url=" + encodeURIComponent(u),
+  u => "https://thingproxy.freeboard.io/fetch/" + u
+];
+
+const SEEDS = [
+  {name:"Reuters World", url:"https://www.reutersagency.com/feed/?best-topics=world-news&post_type=best", cat:"World"},
+  {name:"The Verge", url:"https://www.theverge.com/rss/index.xml", cat:"Tech"},
+  {name:"Hacker News", url:"https://hnrss.org/frontpage", cat:"Tech"},
+  {name:"Ars Technica", url:"https://feeds.arstechnica.com/arstechnica/index", cat:"Tech"},
+  {name:"CoinDesk", url:"https://www.coindesk.com/arc/outboundfeeds/rss/", cat:"Finance"},
+  {name:"ESPN", url:"https://www.espn.com/espn/rss/news", cat:"Sports"}
+];
+
+const $ = s => document.querySelector(s);
+const esc = s => (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const strip = h => { const d=document.createElement("div"); d.innerHTML=h||""; return (d.textContent||"").replace(/\s+/g," ").trim(); };
+const uid = s => { let h=0; for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;} return "i"+Math.abs(h); };
+function timeAgo(d){
+  if(!d) return "";
+  const s=(Date.now()-d)/1000;
+  if(s<60) return "just now";
+  if(s<3600) return Math.floor(s/60)+"m";
+  if(s<86400) return Math.floor(s/3600)+"h";
+  if(s<604800) return Math.floor(s/86400)+"d";
+  return new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+}
+let toastT;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
+
+function applyTheme(){ const t=load(LS.theme,"dark"); document.documentElement.setAttribute("data-theme",t); document.querySelector('meta[name=theme-color]').setAttribute("content", t==="light"?"#f3f5f8":"#0b0f17"); }
+$("#themeBtn").onclick=()=>{ save(LS.theme, load(LS.theme,"dark")==="dark"?"light":"dark"); applyTheme(); };
+applyTheme();
+
+async function fetchText(url){
+  let lastErr;
+  for(const p of PROXIES){
+    try{
+      const ctrl=new AbortController();
+      const to=setTimeout(()=>ctrl.abort(), 14000);
+      const r=await fetch(p(url),{signal:ctrl.signal});
+      clearTimeout(to);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const txt=await r.text();
+      if(txt && txt.length>40) return txt;
+      throw new Error("empty");
+    }catch(e){ lastErr=e; }
+  }
+  throw lastErr||new Error("unreachable");
+}
+
+function parseFeed(xmlText, feed){
+  const doc=new DOMParser().parseFromString(xmlText,"text/xml");
+  if(doc.querySelector("parsererror")) throw new Error("bad XML");
+  const out=[];
+  const handle = el => {
+    const get=t=>{ const n=el.querySelector(t); return n?n.textContent:""; };
+    const title=strip(get("title"));
+    let link=get("link");
+    const la=el.querySelector("link[href]"); if(la) link=la.getAttribute("href");
+    const rawDesc=get("description")||get("summary")||get("content")||el.getElementsByTagName("content\\:encoded")[0]?.textContent||"";
+    let body=strip(rawDesc); if(body.length>320) body=body.slice(0,320).trim()+"…";
+    const dStr=get("pubDate")||get("published")||get("updated")||get("dc\\:date");
+    const date=dStr?Date.parse(dStr):0;
+    let img="";
+    const mc=el.querySelector("enclosure[url]");
+    if(mc) img=mc.getAttribute("url");
+    if(!img){
+      for(const n of el.getElementsByTagName("*")){
+        if((n.localName==="content"||n.localName==="thumbnail") && n.getAttribute("url")){ img=n.getAttribute("url"); break; }
+      }
+    }
+    if(!img){ const m=/<img[^>]+src=["']([^"']+)["']/i.exec(rawDesc); if(m) img=m[1]; }
+    if(img && /^http:\/\//i.test(img)) img=img.replace(/^http:/,"https:");
+    if(!title && !body) return;
+    out.push({
+      id: uid((link||title)+feed.id),
+      title: title || (body.length>90?body.slice(0,90)+"…":body),
+      body: title?body:"",
+      link, img, date: isNaN(date)?0:date,
+      source: feed.name, cat: feed.cat||"General"
+    });
+  };
+  doc.querySelectorAll("item").forEach(handle);
+  if(!out.length) doc.querySelectorAll("entry").forEach(handle);
+  return out;
+}
+
+async function fetchViaJson(feed){
+  const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),14000);
+  const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(feed.url),{signal:ctrl.signal});
+  clearTimeout(to);
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json();
+  if(j.status!=="ok"||!j.items) throw new Error("no items");
+  return j.items.map(it=>{
+    let body=strip(it.description||it.content||""); if(body.length>320) body=body.slice(0,320).trim()+"…";
+    const title=strip(it.title||"");
+    let img=it.thumbnail||(it.enclosure&&it.enclosure.link)||"";
+    if(!img){ const m=/<img[^>]+src=["']([^"']+)["']/i.exec(it.description||it.content||""); if(m) img=m[1]; }
+    if(img && /^http:\/\//i.test(img)) img=img.replace(/^http:/,"https:");
+    const date=it.pubDate?Date.parse(it.pubDate):0;
+    return { id:uid((it.link||title)+feed.id), title:title||(body.slice(0,90)), body:title?body:"",
+      link:it.link||"", img, date:isNaN(date)?0:date, source:feed.name, cat:feed.cat||"General" };
+  });
+}
+async function loadFeed(feed){
+  try{ return parseFeed(await fetchText(feed.url), feed); }
+  catch(e){ return await fetchViaJson(feed); }
+}
+
+let busy=false;
+async function refresh(){
+  if(busy) return;
+  if(!feeds.length){ openManage(); return; }
+  busy=true;
+  const btn=$("#refreshBtn"), icon=$("#refreshIcon"), txt=$("#refreshTxt");
+  btn.disabled=true; icon.classList.add("spin"); txt.textContent="Updating…";
+  $("#errArea").innerHTML="";
+  const all=[]; const errs=[];
+  const results=await Promise.allSettled(feeds.map(f=>loadFeed(f)));
+  results.forEach((r,i)=>{
+    if(r.status==="fulfilled") all.push(...r.value);
+    else errs.push(feeds[i].name);
+  });
+  const map=new Map();
+  for(const it of all){ const ex=map.get(it.id); if(!ex || it.date>ex.date) map.set(it.id,it); }
+  items=[...map.values()].sort((a,b)=>b.date-a.date).slice(0,300);
+  save(LS.cache, items);
+  if(errs.length) $("#errArea").innerHTML='<div class="errbox">Couldn\'t reach '+errs.length+' feed(s): '+esc(errs.join(", "))+'. They may be offline or blocked by the proxy — try Refresh again or check the URL in Manage.</div>';
+  $("#metaInfo").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  busy=false; btn.disabled=false; icon.classList.remove("spin"); txt.textContent="Refresh";
+  render();
+}
+
+function categories(){
+  const c={}; items.forEach(i=>c[i.cat]=(c[i.cat]||0)+1);
+  return c;
+}
+function renderChips(){
+  const c=categories(); const cats=Object.keys(c).sort();
+  const savedN=items.filter(i=>savedSet.has(i.id)).length;
+  let html='<button class="chip '+(!savedOnly&&activeCat==='All'?'active':'')+'" data-cat="All">All<span class="n">'+items.length+'</span></button>';
+  html+='<button class="chip '+(savedOnly?'active':'')+'" data-saved="1">★ Saved<span class="n">'+savedN+'</span></button>';
+  cats.forEach(cat=>{ html+='<button class="chip '+(!savedOnly&&activeCat===cat?'active':'')+'" data-cat="'+esc(cat)+'">'+esc(cat)+'<span class="n">'+c[cat]+'</span></button>'; });
+  const el=$("#chips"); el.innerHTML=html;
+  el.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{
+    if(ch.dataset.saved){ savedOnly=true; } else { savedOnly=false; activeCat=ch.dataset.cat; }
+    renderChips(); render();
+  });
+}
+function visible(){
+  let list=items;
+  if(savedOnly) list=list.filter(i=>savedSet.has(i.id));
+  else if(activeCat!=="All") list=list.filter(i=>i.cat===activeCat);
+  if(query){ const q=query.toLowerCase(); list=list.filter(i=>(i.title+" "+i.body+" "+i.source).toLowerCase().includes(q)); }
+  return list;
+}
+function render(){
+  renderChips();
+  const feed=$("#feed"); const list=visible();
+  if(!feeds.length){
+    feed.innerHTML='<div class="state"><div class="big">⚡</div><h2>Welcome to Pulse</h2><p>Your personal news wall, fed by X accounts and sites you choose — no login, no algorithm, no doomscroll. Add your first feed to begin.</p><button class="cta" onclick="openManage()">+ Add feeds</button></div>';
+    return;
+  }
+  if(!items.length){
+    feed.innerHTML='<div class="state"><div class="big">📡</div><h2>Ready when you are</h2><p>You\'ve got '+feeds.length+' feed(s) set up. Hit Refresh to pull the latest.</p><button class="cta" onclick="refresh()">↻ Refresh now</button></div>';
+    return;
+  }
+  if(!list.length){
+    feed.innerHTML='<div class="state"><div class="big">🔍</div><h2>Nothing here</h2><p>No items match this filter'+(query?' for “'+esc(query)+'”':'')+'.</p></div>';
+    return;
+  }
+  feed.innerHTML=list.map(i=>{
+    const read=readSet.has(i.id), sv=savedSet.has(i.id);
+    const ini=(i.source||"?").replace(/^@/,"").slice(0,2).toUpperCase();
+    return '<article class="item '+(read?'read':'')+'" data-id="'+i.id+'">'+
+      (i.img?'<img class="thumb" src="'+esc(i.img)+'" loading="lazy" onerror="this.remove()">':"")+
+      '<div class="top"><div class="av">'+esc(ini)+'</div>'+
+      '<span class="src">'+esc(i.source)+'</span>'+
+      '<span class="cat">'+esc(i.cat)+'</span>'+
+      '<span class="time">'+timeAgo(i.date)+'</span></div>'+
+      '<h3>'+esc(i.title)+'</h3>'+
+      (i.body?'<p class="body">'+esc(i.body)+'</p>':"")+
+      '<div class="acts">'+
+      '<button class="act save '+(sv?'on':'')+'" data-id="'+i.id+'">'+(sv?"★ Saved":"☆ Save")+'</button>'+
+      '<button class="act mark" data-id="'+i.id+'">'+(read?"Mark unread":"Mark read")+'</button>'+
+      (i.link?'<a class="act open" href="'+esc(i.link)+'" target="_blank" rel="noopener" data-id="'+i.id+'">Open ↗</a>':"")+
+      '</div></article>';
+  }).join("");
+
+  feed.querySelectorAll(".act.save").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleSet(savedSet,LS.saved,b.dataset.id);render();});
+  feed.querySelectorAll(".act.mark").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleSet(readSet,LS.read,b.dataset.id);render();});
+  feed.querySelectorAll(".act.open").forEach(a=>a.onclick=()=>{ if(!readSet.has(a.dataset.id)){readSet.add(a.dataset.id);save(LS.read,[...readSet]);} setTimeout(render,300); });
+}
+function toggleSet(set,key,id){ set.has(id)?set.delete(id):set.add(id); save(key,[...set]); }
+
+function openManage(){
+  const sheet=$("#sheet");
+  sheet.innerHTML=''+
+    '<h2>Add a feed</h2>'+
+    '<p class="lead">Paste any RSS feed URL. To follow an X / Twitter account, turn its profile into an RSS feed first (free) — see the guide below.</p>'+
+    '<div class="field"><label>Name</label><input id="fName" placeholder="e.g. Elon Musk or BBC Tech"></div>'+
+    '<div class="row"><div class="field"><label>RSS feed URL</label><input id="fUrl" placeholder="https://…"></div>'+
+    '<div class="field" style="max-width:130px"><label>Category</label><input id="fCat" placeholder="Tech" list="catList"></div></div>'+
+    '<datalist id="catList">'+[...new Set(feeds.map(f=>f.cat))].map(c=>'<option value="'+esc(c)+'">').join("")+'</datalist>'+
+    '<button class="btn" id="addBtn">+ Add feed</button>'+
+    '<div class="seed">'+SEEDS.map((s,i)=>'<button data-seed="'+i+'">+ '+esc(s.name)+'</button>').join("")+'</div>'+
+    '<details class="guide"><summary>How to follow an X / Twitter account</summary>'+
+      '<div class="g">X shut off free data access, so Pulse reads X through a free RSS bridge. One-time setup per account:'+
+        '<ol><li>Go to <code>rss.app</code> (free tier) and sign up.</li>'+
+        '<li>Choose <b>Twitter / X User</b>, paste the profile URL e.g. <code>x.com/handle</code>.</li>'+
+        '<li>Copy the generated <code>.xml</code> feed URL.</li>'+
+        '<li>Paste it in the <b>RSS feed URL</b> box above and Add.</li></ol>'+
+        'Alternatives: a public <code>RSSHub</code> instance (<code>rsshub.app/twitter/user/HANDLE</code>) or <code>Nitter</code> instance if one is online.</div></details>'+
+    '<details class="guide"><summary>Pin Pulse to your homescreen</summary>'+
+      '<div class="g"><b>iPhone / iPad:</b> open in Safari → Share → <b>Add to Home Screen</b>.<br>'+
+        '<b>Android:</b> open in Chrome → menu ⋮ → <b>Add to Home screen</b>.<br>'+
+        '<b>Mac / Windows:</b> Chrome → menu ⋮ → <b>Cast, save, and share → Create shortcut</b> (tick “Open as window”), or Safari → File → <b>Add to Dock</b>.</div></details>'+
+    '<details class="guide"><summary>Advanced: change the fetch proxy</summary>'+
+      '<div class="g">RSS feeds block direct browser access, so Pulse routes through a public proxy. If feeds fail, try a different one.'+
+        '<div class="field" style="margin-top:8px"><input id="pInput" value="'+esc(load(LS.proxy,''))+'" placeholder="https://your-proxy/?url="><div class="hint">Leave blank to use the built-in proxy rotation.</div></div>'+
+        '<button class="btn ghost" id="saveProxy">Save proxy</button></div></details>'+
+    '<h2 style="margin-top:22px">Your feeds ('+feeds.length+')</h2>'+
+    '<div id="feedList">'+(feeds.length?feeds.map(f=>
+      '<div class="feedrow"><div style="min-width:0;flex:1"><div class="nm">'+esc(f.name)+'</div>'+
+      '<div class="u">'+esc(f.url)+'</div></div><span class="tag">'+esc(f.cat)+'</span>'+
+      '<button class="del" data-id="'+f.id+'" title="Remove">✕</button></div>').join(""):'<p class="lead">No feeds yet.</p>')+'</div>'+
+    '<button class="btn ghost" id="closeSheet" style="margin-top:16px">Done</button>';
+  $("#overlay").classList.add("show");
+
+  $("#addBtn").onclick=addFeed;
+  $("#closeSheet").onclick=closeManage;
+  sheet.querySelectorAll(".seed [data-seed]").forEach(b=>b.onclick=()=>{
+    const s=SEEDS[+b.dataset.seed];
+    $("#fName").value=s.name; $("#fUrl").value=s.url; $("#fCat").value=s.cat;
+  });
+  sheet.querySelectorAll(".del").forEach(b=>b.onclick=()=>{
+    feeds=feeds.filter(f=>f.id!==b.dataset.id); save(LS.feeds,feeds); openManage(); render();
+  });
+  $("#saveProxy").onclick=()=>{ const v=$("#pInput").value.trim(); v?save(LS.proxy,v):localStorage.removeItem(LS.proxy); rebuildProxies(); toast("Proxy saved"); };
+}
+function closeManage(){ $("#overlay").classList.remove("show"); }
+$("#overlay").onclick=e=>{ if(e.target.id==="overlay") closeManage(); };
+
+function addFeed(){
+  const name=$("#fName").value.trim();
+  let url=$("#fUrl").value.trim();
+  const cat=($("#fCat").value.trim())||"General";
+  if(!name||!url){ toast("Name and URL required"); return; }
+  if(!/^https?:\/\//i.test(url)) url="https://"+url;
+  if(feeds.some(f=>f.url===url)){ toast("Already added"); return; }
+  feeds.push({id:"f"+Date.now().toString(36), name, url, cat});
+  save(LS.feeds,feeds);
+  $("#fName").value=""; $("#fUrl").value=""; $("#fCat").value="";
+  toast("Feed added — refreshing");
+  closeManage();
+  refresh();
+}
+
+function rebuildProxies(){
+  const custom=load(LS.proxy,"");
+  if(custom){ PROXIES.unshift(u=> custom.includes("?")||custom.endsWith("=") ? custom+encodeURIComponent(u) : custom+u ); }
+}
+rebuildProxies();
+
+$("#refreshBtn").onclick=refresh;
+$("#manageBtn").onclick=openManage;
+let qT;
+$("#searchInput").oninput=e=>{ query=e.target.value; clearTimeout(qT); qT=setTimeout(render,160); };
+
+render();
+if(feeds.length && !items.length) refresh();
+</script>
+</body>
+</html>
